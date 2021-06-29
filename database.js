@@ -1,31 +1,52 @@
-const books = [
+let books = [
   {
-    ISBN: "12345Book",
+    ISBN: "12345ONE",
     title: "Getting started with MERN",
-    pubDate: "2021-07-07",
+    authors: [1, 2],
     language: "en",
-    numPage: 250,
-    author: [1, 2],
-    publications: [1],
-    category: ["tech", "programming", "education", "thriller"],
+    pubDate: "2021-07-07",
+    numOfPage: 225,
+    category: ["fiction", "programming", "tech", "web dev"],
+    publication: 1,
+  },
+  {
+    ISBN: "12345Two",
+    title: "Getting started with Python",
+    authors: [1, 2],
+    language: "en",
+    pubDate: "2021-07-07",
+    numOfPage: 225,
+    category: ["fiction", "tech", "web dev"],
+    publication: 1,
   },
 ];
 
-const author = [
+const authors = [
   {
     id: 1,
-    name: "Pavan",
-    books: ["12345Book", "1234566789Secret"],
+    name: "pavan",
+    books: ["12345ONE", "12345Two"],
   },
-  { id: 2, name: "Elon Musk", books: ["12345Book"] },
+  {
+    id: 2,
+    name: "Deepak",
+    books: ["12345ONE"],
+  },
 ];
 
-const publication = [
+const publications = [
   {
     id: 1,
-    name: "writex",
-    books: ["12345Book"],
+    name: "Chakra",
+    books: ["12345ONE"],
+  },
+  {
+    id: 2,
+    name: "Vickie Publications",
+    books: [],
   },
 ];
 
-module.exports = { books, author, publication };
+module.exports = { books, authors, publications };
+
+// HTTP client -> helper
