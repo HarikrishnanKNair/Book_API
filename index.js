@@ -1,4 +1,3 @@
-const { response } = require("express");
 const express = require("express");
 
 // Database
@@ -7,25 +6,28 @@ const database = require("./database");
 // Initialization
 const booky = express();
 
+// configuration
+booky.use(express.json());
+
 /*
-Route         /
-Description   Get all Books
-Access        Public
-Parameter     Nil
-Methods       Get
+Route           /
+Description     Get all books
+Access          PUBLIC
+Parameter       NONE
+Methods         GET
 */
 booky.get("/", (req, res) => {
   return res.json({ books: database.books });
 });
 
 /*
-Route         /
-Description   Get specific book based on IBSN
-Access        Public
-Parameter     isbn
-Methods       Get
+Route           /is
+Description     Get specific books based on ISBN
+Access          PUBLIC
+Parameter       isbn
+Methods         GET
 */
-booky.get("/:isbn", (req, res) => {
+booky.get("/is/:isbn", (req, res) => {
   const getSpecificBook = database.books.filter(
     (book) => book.ISBN === req.params.isbn
   );
@@ -40,32 +42,188 @@ booky.get("/:isbn", (req, res) => {
 });
 
 /*
-Route         /c
-Description   Get specific book based on category
-Access        Public
-Parameter     category
-Methods       Get
+Route           /c
+Description     Get specific books based on category
+Access          PUBLIC
+Parameter       category
+Methods         GET
 */
-booky.get("/c/:category", (req,res) => {
-    const getSpecificBook=database.books.filter((books) => 
+booky.get("/c/:category", (req, res) => {
+  const getSpecificBook = database.books.filter((book) =>
     book.category.includes(req.params.category)
-    );
-    if (getSpecificBook.length === 0) {
-        return res.json({
-          error: `No book found for the Category of ${req.params.category}`,
-        });
-      }
-    
-      return res.json({ book: getSpecificBook });
+  );
+
+  if (getSpecificBook.length === 0) {
+    return res.json({
+      error: `No book found for the category of ${req.params.category}`,
+    });
+  }
+
+  return res.json({ book: getSpecificBook });
 });
 
 /*
-Route         /author
-Description   Get all authors
-Access        Public
-Parameter     Nil
-Methods       Get
+Route           /author
+Description     get all authors
+Access          PUBLIC
+Parameter       NONE
+Methods         GET
 */
-booky.get("/author")
+booky.get("/author", (req, res) => {
+  return res.json({ authors: database.author });
+});
+
+/*
+Route           /author/book
+Description     get all authors based on books
+Access          PUBLIC
+Parameter       isbn
+Methods         GET
+*/
+booky.get("/author/book/:isbn", (req, res) => {
+  const getSpecificAuthor = database.author.filter((author) =>
+    author.books.includes(req.params.isbn)
+  );
+
+  if (getSpecificAuthor.length === 0) {
+    return res.json({
+      error: `No Author found for the book of ${req.params.isbn}`,
+    });
+  }
+
+  return res.json({ authors: getSpecificAuthor });
+});
+
+/*
+Route           /publications
+Description     get all publications
+Access          PUBLIC
+Parameter       NONE
+Methods         GET
+*/
+booky.get("/publications", (req, res) => {
+  return res.json({ publications: database.publication });
+});
+
+/*
+Route           /book/add
+Description     add new book
+Access          PUBLIC
+Parameter       NONE
+Methods         POST
+*/
+booky.post("/book/add", (req, res) => {
+  const { newBook } = req.body;
+  database.books.push(newBook);
+  return res.json({ books: database.books });
+});
+
+/*
+Route           /author/add
+Description     add new author
+Access          PUBLIC
+Parameter       NONE
+Methods         POST
+*/
+booky.post("/author/add", (req, res) => {
+  const { newAuthor } = req.body;
+  database.author.push(newAuthor);
+  return res.json({ authors: database.author });
+});
+
+/*
+Route           /book/update/title
+Description     Update book title
+Access          PUBLIC
+Parameter       isbn
+Methods         PUT
+*/
+booky.put("/book/update/title/:isbn", (req, res) => {
+  database.books.forEach((book) => {
+    if (book.ISBN === req.params.isbn) {
+      book.title = req.body.newBookTitle;
+      return;
+    }
+  });
+
+  return res.json({ books: database.books });
+});
+
+/*
+Route           /book/update/author
+Description     update/add new author for a book
+Access          PUBLIC
+Parameter       isbn
+Methods         PUT
+*/
+booky.put("/book/update/author/:isbn/:authorId", (req, res) => {
+  // update book database
+
+  database.books.forEach((book) => {
+    if (book.ISBN === req.params.isbn) {
+      return book.author.push(parseInt(req.params.authorId));
+    }
+  });
+
+  // update author database
+
+  database.author.forEach((author) => {
+    if (author.id === parseInt(req.params.authorId))
+      return author.books.push(req.params.isbn);
+  });
+
+  return res.json({ books: database.books, author: database.author });
+});
+
+/*
+Route           /book/update/author
+Description     update/add new author for a book
+Access          PUBLIC
+Parameter       isbn
+Methods         PUT
+*/
+booky.put("/publication/update/book/:isbn", (req, res) => {
+  // update the publication database
+  database.publications.forEach((publication) => {
+    if (publication.id === req.body.pubId) {
+      return publication.books.push(req.params.isbn);
+    }
+  });
+
+  // update the book database
+  database.books.forEach((book) => {
+    if (book.ISBN === req.params.isbn) {
+      book.publication = req.body.pubId;
+      return;
+    }
+  });
+
+  return res.json({
+    books: database.books,
+    publications: database.publications,
+    message: "Successfully updated publication",
+  });
+});
+
+booky.delete("/book/delete/:isbn",(req,res)=>{
+  const updatedBookDatabase = database.books.filter(
+    (book)=> book.ISBN !== req.params.isbn
+  );
+  database.books = updatedBookDatabase;
+  return res.json({books: database.books });
+});
+
+/*
+Route           /book/delete/author
+Description     delete author from a book
+Access          PUBLIC
+Parameter       isbn,author id
+Methods         DELETE
+*/
+
+
+
 
 booky.listen(3000, () => console.log("HEy server is running! 😎"));
+
+// HTTP client -> helper who helps you to make http request
